@@ -2,6 +2,7 @@ package com.aluracursos.literatura_challenge.principal;
 
 import com.aluracursos.literatura_challenge.model.Datos;
 import com.aluracursos.literatura_challenge.model.DatosLibro;
+import com.aluracursos.literatura_challenge.model.Libro;
 import com.aluracursos.literatura_challenge.service.ConvierteDatos;
 import com.aluracursos.literatura_challenge.service.GutendexAPI;
 
@@ -14,7 +15,7 @@ public class Principal {
     private ConvierteDatos convierteDatos = new ConvierteDatos();
     private final String URL_BASE = "http://gutendex.com/books/?search=";
 
-    public void menuPrincipal(){
+    public void menuPrincipal() {
         var opcion = -1;
         while (opcion != 0) {
             var menu = """
@@ -29,7 +30,7 @@ public class Principal {
 
             switch (opcion) {
                 case 1:
-                    getDatosLibro();
+                    buscarLibro();
                     break;
 
                 case 0:
@@ -39,19 +40,21 @@ public class Principal {
         }
     }
 
-    public void getDatosLibro() {
+    public DatosLibro getDatosLibro() {
         System.out.println("Escriba el titulo del libro que desea buscar: ");
         var nombreLibro = teclado.nextLine();
         var json = consumoApi.obtenerLibros(URL_BASE + nombreLibro.replace(" ", "+"));
         var datosBusqueda = convierteDatos.obtenerDatos(json, Datos.class);
-        Optional<DatosLibro> libroBuscado = datosBusqueda.resultados().stream()
+
+        return datosBusqueda.resultados().stream()
                 .filter(l -> l.titulo().toLowerCase().contains(nombreLibro.toLowerCase()))
-                .findFirst();
-        if (libroBuscado.isPresent()) {
-            System.out.println("Libro encontrado: ");
-            System.out.println(libroBuscado.get());
-        } else {
-            System.out.println("No ta");
-        }
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No se encontró el libro"));
+    }
+
+    public void buscarLibro() {
+        DatosLibro datos = getDatosLibro();
+        Libro libro = new Libro(datos);
+        System.out.println(libro);
     }
 }

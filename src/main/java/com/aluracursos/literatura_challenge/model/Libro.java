@@ -1,19 +1,40 @@
 package com.aluracursos.literatura_challenge.model;
 
-import java.util.List;
+import jakarta.persistence.*;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+@Entity
+@Table(name = "libros")
 public class Libro {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String titulo;
-    private List<DatosAutor> autor;
+    @ManyToMany
+    @JoinTable(
+            name = "libros_autores",
+            joinColumns = @JoinColumn(name = "libro_id"),
+            inverseJoinColumns = @JoinColumn(name = "autor_id")
+    )
+    private List<Autor> autores;
+
+    @ElementCollection
+    @CollectionTable(name = "libros_lenguajes", joinColumns = @JoinColumn(name = "libro_id"))
+    @Column(name = "lenguaje")
     private List<String> lenguajes;
+
     private Double totalDescargas;
 
     public Libro() {}
 
     public Libro(DatosLibro datosLibro) {
         this.titulo = datosLibro.titulo();
-        this.autor = datosLibro.autor();
+        this.autores = datosLibro.autor().stream()
+                .map(Autor::new)
+                .collect(Collectors.toList());
         this.lenguajes = datosLibro.lenguajes();
         this.totalDescargas = datosLibro.totalDescargas();
     }
@@ -22,9 +43,9 @@ public class Libro {
     public String toString() {
         return "Libro: " +
                 ", titulo='" + titulo + '\'' +
-                ", autor=" + autor + '\'' +
+                ", autor=" + autores.toString() + '\'' +
                 ", lenguajes=" + lenguajes + '\'' +
-                ", totalDescargas=" + totalDescargas;
+                ", total de descargas=" + totalDescargas;
     }
 
     public Long getId() {
@@ -43,12 +64,12 @@ public class Libro {
         this.titulo = titulo;
     }
 
-    public List<DatosAutor> getAutor() {
-        return autor;
+    public List<Autor> getAutor() {
+        return autores;
     }
 
-    public void setAutor(List<DatosAutor> autor) {
-        this.autor = autor;
+    public void setAutor(List<Autor> autor) {
+        this.autores = autor;
     }
 
     public List<String> getLenguajes() {

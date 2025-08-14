@@ -1,12 +1,38 @@
 package com.aluracursos.literatura_challenge.model;
 
-import java.time.LocalDate;
+import jakarta.persistence.*;
 
+import java.time.LocalDate;
+import java.util.List;
+
+@Entity
+@Table(name = "autores")
 public class Autor {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nombre;
     private LocalDate fechaNacimiento;
     private LocalDate fechaDeceso;
+
+    @ManyToMany(mappedBy = "autores")
+    private List<Libro> libros;
+
+    public Autor() {}
+
+    public Autor(DatosAutor datosAutor) {
+        this.nombre = datosAutor.nombre();
+        this.fechaNacimiento = convertirAnio(datosAutor.fechaNacimiento());
+        this.fechaDeceso = convertirAnio(datosAutor.fechaDeceso());
+    }
+
+    @Override
+    public String toString() {
+        return "Autor: " + '\n' +
+                ", nombre='" + nombre + '\'' +
+                ", año de nacimiento=" + fechaNacimiento.getYear() + '\'' +
+                ", año de deceso=" + fechaDeceso.getYear();
+    }
 
     public Long getId() {
         return id;
@@ -40,11 +66,12 @@ public class Autor {
         this.fechaDeceso = fechaDeceso;
     }
 
-    @Override
-    public String toString() {
-        return "Autor: " +
-                ", nombre='" + nombre + '\'' +
-                ", fechaNacimiento=" + fechaNacimiento +
-                ", fechaDeceso=" + fechaDeceso;
+    private LocalDate convertirAnio(String anioString) {
+        try {
+            int anio = Integer.parseInt(anioString);
+            return LocalDate.of(anio, 1, 1);
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
