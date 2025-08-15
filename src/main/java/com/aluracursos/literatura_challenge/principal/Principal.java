@@ -1,5 +1,6 @@
 package com.aluracursos.literatura_challenge.principal;
 
+import com.aluracursos.literatura_challenge.model.Autor;
 import com.aluracursos.literatura_challenge.model.Datos;
 import com.aluracursos.literatura_challenge.model.DatosLibro;
 import com.aluracursos.literatura_challenge.model.Libro;
@@ -7,20 +8,20 @@ import com.aluracursos.literatura_challenge.repository.LibroRepository;
 import com.aluracursos.literatura_challenge.service.ConvierteDatos;
 import com.aluracursos.literatura_challenge.service.GutendexAPI;
 
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 import java.util.Scanner;
 
 public class Principal {
     private Scanner teclado = new Scanner(System.in);
     private GutendexAPI consumoApi = new GutendexAPI();
     private ConvierteDatos convierteDatos = new ConvierteDatos();
-    private LibroRepository repositorio;
+    private LibroRepository libroRepository;
     private List<Libro> libros;
     private final String URL_BASE = "http://gutendex.com/books/?search=";
 
     public Principal(LibroRepository libroRepository) {
-        this.repositorio = libroRepository;
+        this.libroRepository = libroRepository;
     }
 
     public void menuPrincipal() {
@@ -30,6 +31,7 @@ public class Principal {
                     1 - Buscar libro
                     2 - Listar todos los libros buscados
                     3 - Listar todos los autores
+                    4 - Listar autores por vivos por época
                     
                     0 - Salir
                     """;
@@ -47,6 +49,9 @@ public class Principal {
                     break;
                 case 3:
                     listarAutores();
+                    break;
+                case 4:
+                    listarAutoresPorEpoca();
                     break;
 
                 case 0:
@@ -72,10 +77,10 @@ public class Principal {
         DatosLibro datos = getDatosLibro();
         Libro libro = new Libro(datos);
 
-        boolean validarLibro = repositorio.findByApiLibroId(libro.getApiLibroId()).isPresent();
+        boolean validarLibro = libroRepository.findByApiLibroId(libro.getApiLibroId()).isPresent();
 
         if(!validarLibro) {
-            repositorio.save(libro);
+            libroRepository.save(libro);
             System.out.println("Libro guardado en la base de datos con éxito");
             System.out.println(libro);
         } else {
@@ -86,7 +91,7 @@ public class Principal {
     }
 
     private void listarLibros() {
-        libros = repositorio.findAll();
+        libros = libroRepository.findAll();
         System.out.println("|----------- Listado de libros buscados -----------------|");
         libros.forEach(l ->
                 System.out.println(l.getId() + " - Titulo: " + l.getTitulo()));
@@ -94,6 +99,25 @@ public class Principal {
     }
 
     private void listarAutores() {
-        //Crear la lógica para leer los autores, yo creo que hay que hacer un autor repository >:'V
+        libros = libroRepository.findAllWithAutor();
+        System.out.println("|----------- Listado de autores buscados -----------------|");
+        libros.forEach(l ->
+                l.getAutores().forEach(a ->
+                        System.out.println(a.getId() + " - Nombre: " + a.getNombre())));
+        System.out.println("|--------------------------------------------------------|");
+    }
+
+    private void listarAutoresPorEpoca() {
+        System.out.println("Ingresa por favor los cuatro digitos del año: ");
+        int anio = teclado.nextInt();
+
+        LocalDate fechaBusqueda = LocalDate.of(anio, 1, 1);
+
+        List<Autor> autoresVivos = libroRepository.findAutoresVivosEnFecha(fechaBusqueda);
+
+        System.out.println("|----------- Listado de autores vivos en " + anio + "4 -----------------|");
+        autoresVivos.forEach(a ->
+                System.out.println(a.getId() + " - Nombre: " + a.getNombre()));
+        System.out.println("|--------------------------------------------------------|");
     }
 }
