@@ -3,9 +3,11 @@ package com.aluracursos.literatura_challenge.principal;
 import com.aluracursos.literatura_challenge.model.Datos;
 import com.aluracursos.literatura_challenge.model.DatosLibro;
 import com.aluracursos.literatura_challenge.model.Libro;
+import com.aluracursos.literatura_challenge.repository.LibroRepository;
 import com.aluracursos.literatura_challenge.service.ConvierteDatos;
 import com.aluracursos.literatura_challenge.service.GutendexAPI;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
@@ -13,13 +15,21 @@ public class Principal {
     private Scanner teclado = new Scanner(System.in);
     private GutendexAPI consumoApi = new GutendexAPI();
     private ConvierteDatos convierteDatos = new ConvierteDatos();
+    private LibroRepository repositorio;
+    private List<Libro> libros;
     private final String URL_BASE = "http://gutendex.com/books/?search=";
+
+    public Principal(LibroRepository libroRepository) {
+        this.repositorio = libroRepository;
+    }
 
     public void menuPrincipal() {
         var opcion = -1;
         while (opcion != 0) {
             var menu = """
                     1 - Buscar libro
+                    2 - Listar todos los libros buscados
+                    3 - Listar todos los autores
                     
                     0 - Salir
                     """;
@@ -32,6 +42,12 @@ public class Principal {
                 case 1:
                     buscarLibro();
                     break;
+                case 2:
+                    listarLibros();
+                    break;
+                case 3:
+                    listarAutores();
+                    break;
 
                 case 0:
                     System.out.println("Gracias por utilizar nuestros servicios, hasta pronto");
@@ -40,7 +56,7 @@ public class Principal {
         }
     }
 
-    public DatosLibro getDatosLibro() {
+    private DatosLibro getDatosLibro() {
         System.out.println("Escriba el titulo del libro que desea buscar: ");
         var nombreLibro = teclado.nextLine();
         var json = consumoApi.obtenerLibros(URL_BASE + nombreLibro.replace(" ", "+"));
@@ -52,9 +68,32 @@ public class Principal {
                 .orElseThrow(() -> new RuntimeException("No se encontró el libro"));
     }
 
-    public void buscarLibro() {
+    private void buscarLibro() {
         DatosLibro datos = getDatosLibro();
         Libro libro = new Libro(datos);
-        System.out.println(libro);
+
+        boolean validarLibro = repositorio.findByApiLibroId(libro.getApiLibroId()).isPresent();
+
+        if(!validarLibro) {
+            repositorio.save(libro);
+            System.out.println("Libro guardado en la base de datos con éxito");
+            System.out.println(libro);
+        } else {
+            System.out.println("Libro existente en la base de datos");
+            System.out.println(libro);
+        }
+
+    }
+
+    private void listarLibros() {
+        libros = repositorio.findAll();
+        System.out.println("|----------- Listado de libros buscados -----------------|");
+        libros.forEach(l ->
+                System.out.println(l.getId() + " - Titulo: " + l.getTitulo()));
+        System.out.println("|--------------------------------------------------------|");
+    }
+
+    private void listarAutores() {
+        //Crear la lógica para leer los autores, yo creo que hay que hacer un autor repository >:'V
     }
 }
