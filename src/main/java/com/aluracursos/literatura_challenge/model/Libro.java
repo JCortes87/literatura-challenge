@@ -47,8 +47,7 @@ public class Libro {
                 ", titulo='" + titulo + '\'' +
                 ", autor=" + autores.toString() + '\'' +
                 ", lenguajes=" + lenguajes + '\'' +
-                ", total de descargas=" + totalDescargas+ '\'' +
-                ", id de Gutemberg=" + apiLibroId;
+                ", total de descargas=" + totalDescargas+ '\'';
     }
 
     public Long getId() {

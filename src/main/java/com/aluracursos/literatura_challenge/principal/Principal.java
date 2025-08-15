@@ -10,6 +10,7 @@ import com.aluracursos.literatura_challenge.service.GutendexAPI;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 public class Principal {
@@ -32,6 +33,7 @@ public class Principal {
                     2 - Listar todos los libros buscados
                     3 - Listar todos los autores
                     4 - Listar autores por vivos por época
+                    5 - Listar libros por idioma
                     
                     0 - Salir
                     """;
@@ -52,6 +54,9 @@ public class Principal {
                     break;
                 case 4:
                     listarAutoresPorEpoca();
+                    break;
+                case 5:
+                    listarLibrosPorIdioma();
                     break;
 
                 case 0:
@@ -115,9 +120,36 @@ public class Principal {
 
         List<Autor> autoresVivos = libroRepository.findAutoresVivosEnFecha(fechaBusqueda);
 
-        System.out.println("|----------- Listado de autores vivos en " + anio + "4 -----------------|");
-        autoresVivos.forEach(a ->
-                System.out.println(a.getId() + " - Nombre: " + a.getNombre()));
-        System.out.println("|--------------------------------------------------------|");
+        if (autoresVivos.isEmpty()) {
+            System.out.println("No hay registro de autores vivos para el: " + fechaBusqueda.getYear());
+        } else {
+            System.out.println("|---------- Listado de autores vivos en " + fechaBusqueda.getYear() + "-----------|");
+            autoresVivos.forEach(a ->
+                    System.out.println(a.getId() + " - Nombre: " + a.getNombre()));
+            System.out.println("|--------------------------------------------------------|");
+        }
+    }
+
+    private void listarLibrosPorIdioma() {
+        List<String> idiomas = libroRepository.findIdiomasGuardados();
+        System.out.println("|----------- Selecciona el número de un idioma -----------------|");
+        for (int i = 0; i < idiomas.size(); i++) {
+            System.out.println((i + 1) + ". " + idiomas.get(i));
+        }
+        System.out.println("|---------------------------------------------------------------|");
+
+        var opcion = teclado.nextInt();
+        teclado.nextLine();
+
+        if (opcion < 1 || opcion > idiomas.size()) {
+            System.out.println("Opción no válida");
+        } else {
+            var seleccion = idiomas.get(opcion - 1);
+            List<Libro> libroPorIdioma = libroRepository.findByIdioma(seleccion);
+            System.out.println("|---------- Listado de libros en " + seleccion + "-----------|");
+            libroPorIdioma.forEach(l -> System.out.println(l.getId() + " - Titulo: " + l.getTitulo()));
+            System.out.println("|------------------------------------------------------------|");
+        }
+
     }
 }

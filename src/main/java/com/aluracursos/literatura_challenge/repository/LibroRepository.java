@@ -22,5 +22,9 @@ public interface LibroRepository extends JpaRepository<Libro, Long> {
             "AND (a.fechaDeceso IS NULL OR a.fechaDeceso >= :fecha)")
     List<Autor> findAutoresVivosEnFecha(LocalDate fecha);
 
+    @Query("SELECT DISTINCT i FROM Libro l JOIN l.lenguajes i")
+    List<String> findIdiomasGuardados();
 
+    @Query("SELECT l FROM Libro l JOIN l.lenguajes i WHERE i = :seleccion")
+    List<Libro> findByIdioma(String seleccion);
 }
