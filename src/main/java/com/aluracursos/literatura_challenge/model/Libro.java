@@ -13,7 +13,7 @@ public class Libro {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String titulo;
-    @ManyToMany
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(
             name = "libros_autores",
             joinColumns = @JoinColumn(name = "libro_id"),
@@ -27,6 +27,7 @@ public class Libro {
     private List<String> lenguajes;
 
     private Double totalDescargas;
+    private Long apiLibroId;
 
     public Libro() {}
 
@@ -37,6 +38,7 @@ public class Libro {
                 .collect(Collectors.toList());
         this.lenguajes = datosLibro.lenguajes();
         this.totalDescargas = datosLibro.totalDescargas();
+        this.apiLibroId = datosLibro.apiLibroId();
     }
 
     @Override
@@ -45,7 +47,8 @@ public class Libro {
                 ", titulo='" + titulo + '\'' +
                 ", autor=" + autores.toString() + '\'' +
                 ", lenguajes=" + lenguajes + '\'' +
-                ", total de descargas=" + totalDescargas;
+                ", total de descargas=" + totalDescargas+ '\'' +
+                ", id de Gutemberg=" + apiLibroId;
     }
 
     public Long getId() {
@@ -64,12 +67,12 @@ public class Libro {
         this.titulo = titulo;
     }
 
-    public List<Autor> getAutor() {
+    public List<Autor> getAutores() {
         return autores;
     }
 
-    public void setAutor(List<Autor> autor) {
-        this.autores = autor;
+    public void setAutores(List<Autor> autores) {
+        this.autores = autores;
     }
 
     public List<String> getLenguajes() {
@@ -87,4 +90,13 @@ public class Libro {
     public void setTotalDescargas(Double totalDescargas) {
         this.totalDescargas = totalDescargas;
     }
+
+    public Long getApiLibroId() {
+        return apiLibroId;
+    }
+
+    public void setApiLibroId(Long apiLibroId) {
+        this.apiLibroId = apiLibroId;
+    }
+
 }

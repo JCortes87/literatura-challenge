@@ -30,8 +30,8 @@ public class Autor {
     public String toString() {
         return "Autor: " + '\n' +
                 ", nombre='" + nombre + '\'' +
-                ", año de nacimiento=" + fechaNacimiento.getYear() + '\'' +
-                ", año de deceso=" + fechaDeceso.getYear();
+                ", año de nacimiento=" + (fechaNacimiento != null ? fechaNacimiento.getYear() : "N/A") + '\'' +
+                ", año de deceso=" + (fechaDeceso != null ? fechaDeceso.getYear() : "N/A");
     }
 
     public Long getId() {
